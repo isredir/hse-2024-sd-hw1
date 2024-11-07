@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from abc import ABC, abstractmethod
 
 from datetime import datetime
 
@@ -34,6 +35,12 @@ class TollRoadsData:
 
 
 @dataclass
+class OrderAudit:
+    assign_time: datetime
+    acquire_time: datetime
+
+
+@dataclass
 class AssignedOrder:
     assign_order_id: str
     order_id: str
@@ -42,13 +49,16 @@ class AssignedOrder:
     coin_bonus_amount: float
     final_coin_amount: float
     route_information: str
-
-    # audit fields
-    assign_time: datetime
-    acquire_time: datetime
+    audit: OrderAudit
 
 
-class ConfigMap:
+class Config(ABC):
+    @abstractmethod
+    def __getattr__(self, item):
+        pass
+
+
+class ConfigMap(Config):
     def __init__(self, data: dict):
         self._data = data
         for k, v in data.items():

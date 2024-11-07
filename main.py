@@ -3,7 +3,7 @@ import uuid
 from datetime import datetime
 
 import data_requests as dr
-from model import AssignedOrder
+from model import AssignedOrder, OrderAudit
 
 order_database = {}  # amazingly fast and totally inreliable database ^
 order_executer_index = {}  # amazingly fast and totally inreliable index
@@ -40,8 +40,7 @@ def handle_assign_order_request(order_id: str, executer_id: str, locale: str):
         toll_roads.bonus_amount,
         final_coin_amount,
         '',
-        datetime.now(),
-        None
+        OrderAudit(datetime.now(), None)
     )
 
     if executer_profile.rating >= MAGIC_CONSTANT:
@@ -61,9 +60,10 @@ def handle_acquire_order_request(executer_id: str):
         order_id = order_executer_index[executer_id]
         # race condition is possible here!
         order_data = order_database[order_id]
-        order_data.acquire_time = datetime.now()
+        order_audit = order_data.audit
+        order_audit.acquire_time = datetime.now()
 
-        print(f'>> Order acquired!Acquire time == f{order_data.acquire_time - order_data.assign_time}')
+        print(f'>> Order acquired!Acquire time == f{order_audit.acquire_time - order_audit.assign_time}')
         return order_data
     except KeyError:
         print(f'Order for executer ID "{executer_id}" not found!')
